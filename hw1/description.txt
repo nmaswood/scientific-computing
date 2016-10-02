@@ -1,0 +1,64 @@
+Project 1
+
+This project should be turned by 11PM on Sunday, Oct 2.
+
+To submit your work attach it as a tar file or a zip file
+and e-mail it to both the TAs and to me. The subject line
+should contain the string "CS 28510".
+
+You should write a code to approximate the integrals of a
+function f(x) on an interval [a,b] to a specified
+tolerance. The technique that you should use is an adaptive
+trapezoidal rule.
+
+A function computes a coarse and fine approximation of the
+integral using one and two intervals of the trapezoidal
+rule. If certain conditions are met, the fine approximation
+is returned as the value.  If the conditions are not met,
+the function returns the sum of the two values of calling
+itself on the two halves of the interval in question with
+one half the tolerance. You need to keep track, some how, of
+the depth or level of the recursion. For a fine
+approximation to be "good" at least one of the following
+conditions should be met:
+
+  1. The level should be at least minLevel, and the
+     difference between the two approximations should be no
+     more than three times the tolerance.
+  2. The level is at least maxLevel.
+
+A reasonable value for maxLevel is 30.
+
+It might seem that each call to this function at each
+level requires three function evaluations, but by passing
+the function values on the ends of the interval, this
+can be reduced to approximately one.
+
+What to Show for an Example
+
+For each example show the following plots:
+
+  A. log of the number of function evaluations vs log(1/tol)
+  B. log(1/actual error) vs log(1/tol)
+  C. -log(good interval length) vs x for one value of tol.
+
+I suggest using tolerances from 1.0e-2 to 1.0e-6.
+I used 1e-2, 3e-3, 1e-3, 3e-4, 1e-4, 3e-5, 1e-5, 3e-6, 1e-6.
+The "actual error" can be computed by using a much smaller
+tolerance to get the "exact" result.
+
+Examples:
+ f(x) = x^2 on [0,2]
+ f(x) = sqrt( sin( pi x/2)) on [0,1]
+ f(x) = x^4 on [-1,1]
+ f(x) = 1 if x<0.5 and 0 if x>=0.5 on [0,1]
+
+
+An improved result: what happens if you return, instead of the
+fine approximation (4* fine - coarse)/3? Plots A and C don't
+change, but what about B?
+
+
+
+
+
