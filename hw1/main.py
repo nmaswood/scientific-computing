@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from math import log, pi, sin
+from math import log, pi, sin, sqrt
 
 ### Structs ###
 
@@ -38,7 +38,14 @@ FOURTH = Function(lambda x: x ** 4, [-1,1])
 # Function : 1 if x<0.5 and 0 if x>=0.5
 # Interval : [0,1]
 
-POTENTIAL = Function(lambda x: 1 if x < 0.5 else 0, [0,1])
+
+def func4(x):
+	if x < 0.5:
+		return 1
+	elif x >= 0.5:
+		return 0
+
+POTENTIAL = Function(func4, [0,1])
 
 # Result
 #
@@ -49,11 +56,15 @@ POTENTIAL = Function(lambda x: 1 if x < 0.5 else 0, [0,1])
 
 class Result():
 
-	def __init__(self, result, max_depth, function_calls):
+	def __init__(self, result,function_calls):
 
 		self.result = result
-		self.max_depth = max_depth
 		self.function_calls = function_calls
+
+	def __str__(self):
+
+		return 'Result is {}\nFunction Calls is {}'.format(
+			self.result, self.function_calls)
 
 
 # AdaptiveQuadrature
@@ -66,14 +77,13 @@ class AdaptiveQuadrature():
 
 		# Keeps track of the number function calls
 		self.function_calls = 0
+		self.i = 10
 
-		# Keeps track of maximum dept
-		self.max_depth = float('-inf')
+	def recursive(self, f, tolerance_original, a_original,b_original, max_level, special = False):
 
-	def adaptive_quadrature(f, tolerance_original, a_original,b_original, max_level, special = False):
 		"""
 
-		adaptive_quadrature
+		recursive
 
 		function -> Float -> Float -> Float -> Int -> Bool -> Result
 
@@ -86,25 +96,26 @@ class AdaptiveQuadrature():
 
 		def sub_routine(tolerance, a, b, level):
 
+			self.i += 1
+
 			f_a, f_b = f(a), f(b)
 
-			I_1 = ((b-a)/2) * (f_a + f_b)
+			coarse = ((f_a + f_b) * (b-a)) / 2
 
 			m = (a+b) / 2
 
 			f_m = f(m)
 
-			I_2 = ((b-a)/4) * (f_a + 2 * f_m + f_b)
+			first_trap = ((f_a + f_m) * (m - a)) / 2
+			second_trap = ((f_m + f_b) * (b - m)) / 2
 
-			if abs(I_1 - I_2) < (3 * (b-a) * tolerance) and level >= max_level:
+			fine = first_trap + second_trap
+
+			if abs(fine - coarse) < (3 * tolerance) and level <= max_level:
 
 				self.function_calls += 1
-				self.max_depth = max(self.max_depth, level)
 
-				if special:
-					return  (4 * I_2  - I_1) / 3
-
-				return I_2
+				return fine
 
 			else:
 
@@ -113,7 +124,13 @@ class AdaptiveQuadrature():
 
 		approximation = sub_routine(tolerance_original, a_original,b_original, 0)
 
-		return Result(approximation, self.max_depth, self.function_calls)
+		return Result(approximation, self.function_calls)
+
+fuck = lambda x: (x + 1) ** 3
+run = AdaptiveQuadrature()
+res = run.recursive(fuck, 1e-3, 0, 1, 10)
+print (res)
+
 
 # Example
 #
@@ -121,14 +138,14 @@ class AdaptiveQuadrature():
 # used to test and the different
 # factors against one another.
 
-class Example(AdaptiveQuadrature):
+class Example():
 
 	def __init__(self):
 
-		self.MAX_LEVEL = 30
+		self.MAX_LEVEL = 10
 		self.PADDING = 1e-30
-		self.ACTUAL_ERROR_TOLERANCE = 1e-30
-		self.TOLERANCE_RANGE = (1e-2, 3e-3, 1e-3, 3e-4, 3e-5, 1e-5, 3e-6, 1e-6)
+		self.ACTUAL_ERROR_TOLERANCE = 1e-1
+		self.TOLERANCE_RANGE = (5e-1, 3e-1, 1e-1, 5e-2, 3e-2, 1e-2, 5e-3, 3e-3,2e-3,)
 
 	def calculate(self, f, a, b):
 
@@ -140,7 +157,7 @@ class Example(AdaptiveQuadrature):
 
 		Returns a dictionary containing all the x,y points to be graphed
 
-		"""		
+		"""	
 
 
 		def function_evaluations_test(f, a, b):
@@ -157,13 +174,13 @@ class Example(AdaptiveQuadrature):
 			"""
 
 			results = [
-				self.adaptive_quadrature(f, tol_variable, a,b, self.MAX_LEVEL) for 
+				AdaptiveQuadrature().recursive(f, tol_variable, a,b, self.MAX_LEVEL) for 
 				tol_variable in self.TOLERANCE_RANGE
 			]
 
 			xs = [x.function_calls for x in results]
 
-			ys = [log(1/tol_variable + self.PADDING) for tol_variable in TOLERANCE_RANGE]
+			ys = [log(1/(tol_variable + self.PADDING)) for tol_variable in self.TOLERANCE_RANGE]
 
 			return (xs,ys)
 
@@ -180,12 +197,13 @@ class Example(AdaptiveQuadrature):
 
 			"""
 
-			actual_error = self.actual_quadrature(f,ACTUAL_ERROR_TOLERANCE, a,b, self.MAX_LEVEL)
+			#actual_error = AdaptiveQuadrature().adaptive_quadrature(f,self.ACTUAL_ERROR_TOLERANCE, a,b, self.MAX_LEVEL)
 
-			xs = [1/ log(actual_error)] * len(TOLERANCE_RANGE)
+			#xs = [1/ log(actual_error)] * len(self.TOLERANCE_RANGE)
 
-			ys = []
+			#ys = []
 
+			return ([1,2,3], [1,2,3])
 		def good_interval_length_test(f,a,b):
 
 			"""
@@ -199,8 +217,9 @@ class Example(AdaptiveQuadrature):
 
 			"""
 
+			return ((1,2,3), (1,2,3))
 
-			pass
+
 
 		return {
 			'function_evaluations': function_evaluations_test(f,a,b),
@@ -208,7 +227,7 @@ class Example(AdaptiveQuadrature):
 			'good_interval': good_interval_length_test(f,a,b)
 		}
 
-	def do_all_tests():
+	def do_all_tests(self):
 
 		"""
 		do_all_tests
@@ -219,17 +238,22 @@ class Example(AdaptiveQuadrature):
 
 		results = []
 		
-		for function_struct in (SQRD, SQRT, FOURTH, POTENTIAL):
+		for function_struct in (SQRD, SQRT, FOURTH):#,POTENTIAL):
 
-			f = function_struct.function
+			f = function_struct.f
 			a,b = function_struct.interval
 
 			results.append(self.calculate(f,a,b))
 
 		return results
 
+
 class Plot():
-	
+
+
+	def __init__(self):
+		self.i = 1
+
 	"""
 
 	plot_one
@@ -240,12 +264,51 @@ class Plot():
 
 	"""
 
-	def plot_one(self,xs, ys, xlabel, ylabel):
+	def plot_one(self,xs, ys, xlabel, ylabel, title):
 
-		plt.plot(xs, ys)
-		plt.xlabel = xlabel
-		plt.ylabel = ylabel
+		foo = plt.subplot(2,2,self.i)
+		self.i += 1
+		foo.plot(xs, ys)
+		foo.set_xlabel(xlabel)
+		foo.set_ylabel(ylabel)
+		return foo
+
+	def plot_one_function(self, function_name, function_data_dict):
+
+		x = plt.figure(1)
+		x.suptitle(function_name)
+
+
+		for key in ('function_evaluations', 'actual_error', 'good_interval'):
+
+			xs, ys = function_data_dict[key]
+
+			label_dict = {
+
+				'function_evaluations': ('function calls', '1/ log(tol)'),
+				'actual_error': ('1 /log(actual_error)', 'log(1/tol)'),
+				'good_interval': ('-log(good interval length)', 'x for one val of tol')
+			}
+
+			x_label, y_label = label_dict.get(key)
+			print (x_label, y_label)
+
+
+			x.add_subplot(self.plot_one(xs,ys, x_label, y_label, function_name))
 		plt.show()
+		self.i  =1
+
+	def plot_all_functions(self, all_function_dict):
+		pass
 
 if __name__ == '__main__':
-	print ("hello world")
+	run = Example()
+	res = run.do_all_tests()
+	plot = Plot()
+
+	names = ('sqrd', 'sqrt','fourth',)# 'potential')
+
+	for name, data in zip(names, res):
+
+		plot.plot_one_function(name, data)
+
