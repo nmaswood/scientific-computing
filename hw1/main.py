@@ -298,17 +298,17 @@ class Plot():
 		plt.show()
 		self.i  =1
 
-	def plot_all_functions(self, all_function_dict):
-		pass
+	def plot_all_functions(self):
+
+		names = ('sqrd', 'sqrt','fourth',)# 'potential')
+
+		for name, data in zip(names, res):
+
+			self.plot_one_function(name, data)
 
 if __name__ == '__main__':
 	run = Example()
 	res = run.do_all_tests()
 	plot = Plot()
-
-	names = ('sqrd', 'sqrt','fourth',)# 'potential')
-
-	for name, data in zip(names, res):
-
-		plot.plot_one_function(name, data)
+	plot.plot_all_functions()
 
