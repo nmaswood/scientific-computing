@@ -1,0 +1,117 @@
+Project 2 -- An Adams Method
+
+
+
+You are to implement a solver that approximates the solution
+of ordinary differential systems using a third order
+predictor corrector technique. For the problem on [a,b]
+
+   y' = f(t,y),
+   y(a) = y0,
+
+where a, b, f, and y0 are given, you should approximate the
+solution at a sequence of points t0=a < t1 < ... < tn=b.
+These points will be chosen based on an automatic time step
+adjustment method.  The function y goes from the interval
+[a,b] into R^d, i.e., y(t) is a d-vector. The function f
+takes a scalar and a d-vector to a d-vector.  I suggest that
+you store the solution values in a matrix or vector object,
+because we want to be able to do algebra with the vectors
+that represent the approximate solution and the function
+values.
+
+Taking A Step. To advance from knowing the solution up to
+t_now to knowing it up to t_new you should predict the value
+of the solution at t_new by using a linear extrapolation of
+the values of f at time t_now and t_old. Correct this
+prediction by integrating from t_now to t_new the quadratic
+that interpolates the values of f at t_old, t_now, and
+t_new, where you use the predicted value of the solution to
+get the value of f at t_new.  I suggest that you encapsulate
+this functionality in a routine called step that takes the
+current and previous values of f (fnow and fold), the
+current solution (Ynow), time, and the previous and next
+step lengths (dtold, dt), and then returns the corrected
+value of the solution (Ynew) and the change between the
+prediction and the corrected solutions (ddY).
+
+Advancing Time. 
+class simTime. I use a routine called advance
+that takes a simTime object, the current solution, the
+current and previous values of f as inputs and returns the
+last two values of f, and the solution at endTime. This
+routine maintains the simTime object, so that on return time
+== endTime.  To start the process, I suggest a very small
+step (say dtmin), with the previous value of f equal to its
+current value. If you call advance more than once (a
+reasonable thing to do) you have the previous value of f and
+the associated dtold.
+
+Use a norm of the change between the prediction and correction as the error
+indicator, ei. A step is bad if the ei exceeds the tolerance and
+dt is bigger than dtmin. Reject bad steps, halve dt and try
+again. Otherwise accept the step and nominate a new dt.  Provided
+we have not rejected a step very recently, increase dt by a
+factor agrow, if ei < tol/4. If ei> 0.75 tol, decrease the step
+by a factor ashrink. (You need agrow > 1 > ashrink > 0.  I use
+numbers like ashrink = 0.8, agrow = 1.25.) If your dt will take
+you past endTime, decrease it. If two such steps will take you
+past endTime but one will not make it there, take a step that is
+half the distance to endTime. Always respect the minimum and
+maximum vales of dt, dtmin and dtmax, except in the case that
+time < endTime and endTime-time < 2*dtmin.
+
+Testing the Code. This can be done on problems for which the
+answers are known, such as f(t,y) = pow(t,m), for m=0, 1, 2,
+3. You should get exact the right answer for m=0, 1, 2, but
+not for m=3. Your submission should indicate the the results
+of your tests for [a,b] = [0,2], tol = 0.01 and 0.001. You can
+run all these tests at once using d = 4, and taking the
+error indicator, ei, to be the euclidean norm of ddY. Note
+this is not an exhaustive test, since f does not depend on
+Y.  You can also use f(t,y ) = y, which has the solution
+y(t) = y(a) exp(t-a), but you do not need to include this in
+your submission.
+
+
+Finally, you should test your code on the equations for the
+motion of a comet about the sun:
+
+  r'' = -r / pow( |r|, 3)
+
+So that we can compare answers, try this with initial
+position r(0) = (1,0) and r'(0) = (0, 0.3). Track the total
+energy of the system (which should be constant):
+
+   E = 0.5 sq(|r'|) - 1/|r|.
+
+The period of the comet is 2 pi / pow( 2-sq(0.3), 1.5).
+
+Provide plots of the trajectory and of the energy for 3
+periods.  Do this for at least two values of the tolerance,
+0.01 and 0.001. My results show that the numerical comet
+makes slightly more than three rotations during the three
+periods.
+
+It is fine to use the euclidean norm of the ddY as the error
+indicator.
+
+In producing the plots I just write the results of each
+accepted step to a file called trace and then move trace to
+a file trace1.0e-2 or 1.0e-3.  For me, the file trace has
+the columns
+
+   time, dt, log10(dt), ei, YNOW
+
+where time and YNOW have already been updated by the
+accepted step.  For completeness I write the initial state
+before the solution process starts.  A couple of files that
+can be used with gnuplot are included in the project file. A
+C++ code to test the comet problem is also included; you can
+use it, or mimic its behavior in the language you choose to
+use.
+
+Incremental development. You can write the step routine and
+test it without the time step adjustment, just use a given
+time step. For me, by grace of numvec, there are about 5 lines
+in step, excluding comments. (Please do include comments.)

@@ -5,8 +5,6 @@ class FullSystem():
     """
     Citations:
 
-    In terms of understanding the concept I used this resource:
-
     http://www.math.usm.edu/lambers/mat610/sum10/lecture4.pdf
 
 
@@ -164,8 +162,8 @@ class TDMGauss():
         for i in range(1,n):
 
             m = a[i-1] / b[i-1]
-            b[i] = b[i] - m * c[i-1]
-            d[i] = d[i] - m * d[i-1]
+            b[i] -= m * c[i-1]
+            d[i] -= m * d[i-1]
 
         return TDMSystem(a,b,c,d)
 

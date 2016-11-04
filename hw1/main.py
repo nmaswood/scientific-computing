@@ -100,27 +100,32 @@ class AdaptiveQuadrature():
 
 			f_a, f_b = f(a), f(b)
 
-			coarse = ((f_a + f_b) * (b-a)) / 2
+			coarse = ((f_a + f_b) * (b-a)) / 2.0
 
-			m = (a+b) / 2
+			m = (a+b) / 2.0
 
 			f_m = f(m)
 
-			first_trap = ((f_a + f_m) * (m - a)) / 2
-			second_trap = ((f_m + f_b) * (b - m)) / 2
+			first_trap = ((f_a + f_m) * (m - a)) / 2.0
+			second_trap = ((f_m + f_b) * (b - m)) / 2.0
 
 			fine = first_trap + second_trap
 
-			if abs(fine - coarse) < (3 * tolerance) and level <= max_level:
+			if abs(fine - coarse) < (3.0 * tolerance) or level >= max_level:
 
 				self.function_calls += 1
 
+
+				# this is the improved result
+				return (4 * fine - coarse)/ 3
+
+				# not improved
 				return fine
 
 			else:
 
-				return  sub_routine(tolerance / 2, a, m, level + 1) + \
-				        sub_routine(tolerance / 2, m, b, level + 1)
+				return  sub_routine(tolerance / 2.0, a, m, level + 1.0) + \
+				        sub_routine(tolerance / 2.0, m, b, level + 1.0)
 
 		approximation = sub_routine(tolerance_original, a_original,b_original, 0)
 
@@ -128,7 +133,7 @@ class AdaptiveQuadrature():
 
 fuck = lambda x: (x + 1) ** 3
 run = AdaptiveQuadrature()
-res = run.recursive(fuck, 1e-3, 0, 1, 10)
+res = run.recursive(fuck, 1e-3, 0.0, 1.0, 10)
 print (res)
 
 
@@ -144,7 +149,7 @@ class Example():
 
 		self.MAX_LEVEL = 10
 		self.PADDING = 1e-30
-		self.ACTUAL_ERROR_TOLERANCE = 1e-1
+		self.ACTUAL_ERROR_TOLERANCE = 1e-30
 		self.TOLERANCE_RANGE = (5e-1, 3e-1, 1e-1, 5e-2, 3e-2, 1e-2, 5e-3, 3e-3,2e-3,)
 
 	def calculate(self, f, a, b):
@@ -158,6 +163,11 @@ class Example():
 		Returns a dictionary containing all the x,y points to be graphed
 
 		"""	
+
+		results = [
+			AdaptiveQuadrature().recursive(f, tol_variable, a,b, self.MAX_LEVEL) for 
+			tol_variable in self.TOLERANCE_RANGE
+		]
 
 
 		def function_evaluations_test(f, a, b):
@@ -173,13 +183,7 @@ class Example():
 
 			"""
 
-			results = [
-				AdaptiveQuadrature().recursive(f, tol_variable, a,b, self.MAX_LEVEL) for 
-				tol_variable in self.TOLERANCE_RANGE
-			]
-
 			xs = [x.function_calls for x in results]
-
 			ys = [log(1/(tol_variable + self.PADDING)) for tol_variable in self.TOLERANCE_RANGE]
 
 			return (xs,ys)
@@ -197,13 +201,14 @@ class Example():
 
 			"""
 
-			#actual_error = AdaptiveQuadrature().adaptive_quadrature(f,self.ACTUAL_ERROR_TOLERANCE, a,b, self.MAX_LEVEL)
+			actual_error = AdaptiveQuadrature().recursive(f,self.ACTUAL_ERROR_TOLERANCE, a,b, self.MAX_LEVEL).result
 
-			#xs = [1/ log(actual_error)] * len(self.TOLERANCE_RANGE)
+			xs = [(x.result - actual_error) for x in results]
+			ys = [log(1/(tol_variable + self.PADDING)) for tol_variable in self.TOLERANCE_RANGE]
 
-			#ys = []
 
-			return ([1,2,3], [1,2,3])
+			return (xs, ys)
+
 		def good_interval_length_test(f,a,b):
 
 			"""
@@ -215,9 +220,24 @@ class Example():
 			Returns a tuple where xs is _
 			and ys is __
 
+			-log(good interval length) vs x for one value of tol.
+
+
 			"""
 
-			return ((1,2,3), (1,2,3))
+			GOOD_INTERVAL_LENGTH_FACTOR = 100
+
+			tolerance = 1e-10
+
+			xs_pre = [AdaptiveQuadrature().recursive(f,tolerance, 0, 1.0 / x, self.MAX_LEVEL) for x in 
+			range(1,100)]
+
+			xs = [-log(x.result  + self.PADDING) for x in xs_pre]
+
+			ys = range(1, 100)
+
+
+			return (xs,ys)
 
 
 
@@ -238,7 +258,7 @@ class Example():
 
 		results = []
 		
-		for function_struct in (SQRD, SQRT, FOURTH):#,POTENTIAL):
+		for function_struct in (SQRD, SQRT, FOURTH,POTENTIAL):
 
 			f = function_struct.f
 			a,b = function_struct.interval
@@ -295,12 +315,13 @@ class Plot():
 
 
 			x.add_subplot(self.plot_one(xs,ys, x_label, y_label, function_name))
+		#plt.savefig('{}.png', function_name)
 		plt.show()
 		self.i  =1
 
 	def plot_all_functions(self):
 
-		names = ('sqrd', 'sqrt','fourth',)# 'potential')
+		names = ('sqrd', 'sqrt','fourth','potential')
 
 		for name, data in zip(names, res):
 
