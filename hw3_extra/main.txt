@@ -1,0 +1,98 @@
+Extra Credit 3 -- QR Solver for full matrices
+
+This project is due at 11 PM on Thursday, November 17.
+
+The purpose of this project is to produce
+a solver that is based on a QR factorization of a
+square full matrix. You should feel free to use part or all
+of my posted code for project 3; see the examples section.
+
+In describing the process of solving equations I will use a
+colon notation that is commonly used in matrix theory.  If A
+is a k x r matrix then A(:,j) is the column of A with index
+j and A(j,:) is the row of A with index j. Further
+A(p:q,r:s) is the a sub-matrix of A where the row index is
+constrained to be in the interval [p,q] and the column index
+is on [r,s]. Note this is slightly different from the way
+Python uses ":"
+
+You should do the QR solver using Householder reflections
+(also called Householder transformations). Given a vector
+X = (X(0), ..., X(m))^T we will compute a vector 
+V = (V(0), ..., V(m))^T and a number beta such that the
+transformation
+
+(1)    P = I - beta V V^T
+
+takes X to a vector, Y, that is zero except possibly in its
+first position. Here the ^T notation denotes transpose. The
+vector V is called the Householder vector for X. The vector
+V is computed in two steps: first we set
+
+(2)    V^T = X^T - ||X|| e0^T,
+
+where e0 = (1,0,0,...0)^T is an m+1-column-vector with a 1
+in the first position and zeros everywhere else. Here ||X||
+is the euclidean norm of X. The formula for beta is
+
+(3)    beta = 2 / ( V^T V).
+
+Note that P is unchanged if we multiply V by any nonzero
+number. If V(0) is nonzero, we divide V by it, otherwise
+set beta to zero. (In the case V(0) = 0, X was already a
+multiple of e0, so P = I is fine.) In computing V(0) we use
+a formula that is due to Parlett if X(0) is positive:
+
+(4)   V(0) = (sq(X(1)) + ... + sq(X(m)) / (X(0) + ||X||),
+
+where sq(x) is the square of x. Note that the numerator can
+be computed as part of finding ||X||. 
+
+The result of applying P to X is ||X|| e0.
+
+Now suppose that A is an (m+1)x(m+1) nonsingular matrix. We
+will convert A into an upper triangular matrix R by
+multiplying A by a succession of Householder
+transformations. For i=0, .., m-1 we compute the Householder
+vector V and beta from a vector
+
+(5)    X = A(i:m,i).
+
+At each step P is an (m-i+1)x(m-i+1) matrix. We conceptually
+extend P to be an (m+1)x(m+1) matrix as follows
+
+               | I  0 |
+(6)       BP = | 0  P |
+
+where the I is i x i. In the code this means that we apply P
+to the last m-i+1 rows of A. We want to save the Householder
+vectors and the associated beta's so that we can use these
+transformations to solve equations A X = B. I suggest that
+at the i-th stage you store all but the first entry in V in
+A(i+1:m,i), the part of A that is zeroed out by the P
+associated with that V. Of course one does not need to store
+the 1 that is V(0), except in your head. The beta needs to
+be stored, and I suggest that you use an m-vector for that.
+
+The result of carrying out these transformations on A is
+that the desired matrix R is stored in A, on and above the
+main diagonal. The Q is not explicitly represented, but the
+V's used in the Householder transformations are kept so we
+can easily multiply by them.
+
+To solve A X = B, one applies the transformations in order
+to B and then solves the upper triangular system of
+equations in the normal way.
+
+In applying the Householder transformations it important
+that one not actually represent V V^T as a full matrix. This
+square matrix can be applied to a vector W as
+
+(7)   V V^T W = (V^T W) V.
+
+Note that V^T W is just the inner product of V and W.
+
+It may be useful to look at a description of the Householder
+version of QR in one of the references listed on the web
+page.  I find the discussion in Golub and Van Loan, sections
+5.1.3 and 5.1.4, to be clear and helpful.
