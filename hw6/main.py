@@ -61,9 +61,10 @@ class System():
 
         for i in range(0, steps-1):
 
-            f_1 =  lambda x: x - dt * f_x(x, y[i], z[i])
-            f_2 =  lambda y: y - dt * f_x(x[i], y, z[i])
-            f_3 =  lambda z: z - dt * f_x(x[i], y[i], z)
+            f_1 =  lambda x: x - dt * f_x(x + dt, y[i], z[i])
+            f_2 =  lambda y: y - dt * f_x(x[i], y+ dt, z[i])
+            f_3 =  lambda z: z - dt * f_x(x[i], y[i], z + dt
+                )
 
             x[i+1] = x[i] + newton(f_1, x[i])
             y[i+1] = y[i] + newton(f_2, y[i])
