@@ -1,53 +1,72 @@
 import numpy as np
-
-from numpy import matmul
 from scipy.linalg import solve_triangular, solve
 
-# https://github.com/BabisK/M36105P
+"""
+TLDR: The sanity check that this works is to run this script. Two vectors will be printed and they should be the same
+one is from  scipy's built in linear equation solver and the other is my implemenation they are working with the same
+Ax = B so they should be the same.
 
-# Ax = B
+The purpose of this project is to produce
+a solver that is based on a QR factorization of a
+square full matrix.
 
-class Solver():
+My solution works in three stages:
+
+1. First I wrote a function that transforms a matrix using the householder method
+2. Then I used that function to implement QR factorization
+3. Finally, I used the QR form of matrix A in order to solve the matrix
+using the triangular solver we developed in hw3. However I do not actually use the solver because I figure just
+using scipy is easier and more straightforward.
+
+
+This site helped me figureo out the methdology.
+http://www.seas.ucla.edu/~vandenbe/133A/lectures/qr.pdf
+
+This repo helped me with the code
+https://github.com/BabisK/M36105P
+"""
+class Householder():
 
     def __init__(self, A,B):
+
         self.A = A
         self.B = B
 
-    def houseHolderTransf(self,x):
-
+    def transformation(self,x):
         l = len(x)
-        I = np.identity(l)
+
         b = np.zeros(l)
 
-        b[0] = -np.sign(x[0])*np.linalg.norm(x)
+        b[0] = np.linalg.norm(x) * -np.sign(x[0])
 
-        a_err = x - b
-        a_err = a_err.reshape(l,1)
+        err = (x - b).reshape(l,1)
 
-        return I + np.dot(a_err,np.transpose(a_err))/(b[0]*a_err[0])
+        transpose_term = b[0] * err[0]
+
+        Y = np.dot(err,np.transpose(err))
+
+        return np.identity(l) + Y/transpose_term
 
     def QR(self, A):
-
-        """This function calculate the factorization A = QR"""
 
         m,n = A.shape
         Q = np.identity(m)
         R = A.copy()
 
         for i in range(n):
-            P = self.houseHolderTransf(R[-m+i:,i])
-            Qi  = np.identity(m)
-            Qi[-len(P):,-len(P):] = P
-            R = np.dot(Qi,R)
-            Q = np.dot(Q,Qi)
+            P = self.transformation(R[-1 *m+i:,i])
+            l_p = -len(P)
+            Q_i  = np.identity(m)
+            Q_i[l_p:,l_p:] = P
+            R = np.dot(Q_i,R)
+            Q = np.dot(Q,Q_i)
         return Q,R
 
-    def householder(self):
+    def solve(self):
 
         Q, R = self.QR(self.A)
-        c = matmul(Q.T, self.B)
-
-        return solve_triangular(R, c)       
+        
+        return solve_triangular(R, np.matmul(Q.T, self.B))
 
 class Test():
 
@@ -67,8 +86,8 @@ class Test():
 
         from_scipy = solve(x,y)
 
-        result = Solver(x,y).householder()
-        
+        result = Householder(x,y).solve()
+
         print (from_scipy)
         print (result)
 
