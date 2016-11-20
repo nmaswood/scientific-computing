@@ -19,7 +19,7 @@ using the triangular solver we developed in hw3. However I do not actually use t
 using scipy is easier and more straightforward.
 
 
-This site helped me figureo out the methdology.
+This site helped me figure out the methdology.
 http://www.seas.ucla.edu/~vandenbe/133A/lectures/qr.pdf
 
 This repo helped me with the code
@@ -65,12 +65,13 @@ class Householder():
     def solve(self):
 
         Q, R = self.QR(self.A)
-        
+
         return solve_triangular(R, np.matmul(Q.T, self.B))
 
 class Test():
 
     def __init__(self):
+
         self.x = np.array([
             [1,2,1, -1],
             [3 ,2 ,4 ,4],
