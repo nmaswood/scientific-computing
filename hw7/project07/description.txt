@@ -1,0 +1,40 @@
+Project 7 -- Conjugate Gradient Solver for 5-point Laplacian
+
+This project is due at 11 PM on Sunday, November 27.
+
+You are to produce a version of the conjugate gradient
+iteration for discrete laplacian problems. Here the solution
+that we are trying to approximate is represented as an NxN
+matrix. If u is the solution we think of u(i,j) as being the
+approximation of a function at (i*dx,j*dx), where dx =
+1/(N-1). From the point of view of the linear algebra the
+square matrix, u, is the "vector" that represents the
+solution.
+
+It is convenient to use matrix tools to manipulate the
+vectors that give the solution, residual and search
+direction.
+
+There is an aspect of this problem that might be a little
+confusing. We are really looking for (N-2)*(N-2) values that
+are the values in the interior of the unit square, but we
+are dealing with "vectors" that have N*N values in them; the
+values on the boundary are all zero. 
+
+You can code this project in the language of your choice,
+within reason, but a partial code is provided in C++. It
+gives a pair of test problems and indicates the functions
+that you should use.
+
+
+There are two parts that are missing in this C++ code:
+
+  The function that multiplies by the matrix, without the
+  matrix being constructed. This is a common kind of
+  function for so-called matrix free methods.
+
+  The code that does a step of conjugate gradient.
+
+
+You should plot the solution, u, of the second test problem
+using a surface plot.
